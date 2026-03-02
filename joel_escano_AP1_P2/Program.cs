@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using joel_escano_AP1_P2.Components;
 using joel_escano_AP1_P2.DAL;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 builder.Services.AddDbContextFactory<Contexto>(options => options.UseSqlServer(ConStr));
 
 
-
+builder.Services.AddBlazoredToast();
 
 var app = builder.Build();
 
