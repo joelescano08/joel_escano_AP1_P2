@@ -1,0 +1,79 @@
+﻿@page "/ViajesEspaciales/Index"
+
+
+<div class="container">
+
+	<div class="card shadow-lg">
+		<div class="card-header d-flex justify-content-between">
+			<h5 class="card-title h4">Viajes Espaciales</h5>
+			<a href="ViajesEspaciales/Create" class="btn btn-primary"><span class="bi bi-plus-square-fill"></span>Crear</a>
+		</div>
+		<div class="card-body">
+			<div class="row mb-3">
+				<div class="col-2">
+					<label class="h5">Filtro</label>
+				</div>
+				<div class="col-2">
+					<div class="h5">Búsqueda</div>
+				</div>
+				<div class="col-2">
+					<div class="h6">Fecha de Salida</div>
+				</div>
+				<div class="col-2">
+					<div class="h6">Fecha de Entrada</div>
+				</div>
+			</div>
+			<div class="row mb-3">
+				<div class="col-2">
+					<InputSelect class="form-control" @bind-Value="Filtro">
+						<option value="seleccionar"></option>
+					</InputSelect>
+				</div>
+
+				<div class="col-2">
+					<InputText class="form-control" @bind-Value=ValorBusqueda"></InputText>
+				</div>
+
+				<div class="col-2">
+					<InputDate class="form-control" @bind-Value="FechaEntrada">
+					</InputDate>
+				</div>
+
+				<div class="col-2">
+					<InputDate class="form-control" @bind-Value="FechaSalida">
+					</InputDate>
+				</div>
+
+				<div class="col-2">
+					<button class="btn btn-primary" @onclick="Buscar"><span class="bi bi-search"></span>Buscar</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="card-footer">
+
+		</div>
+
+	</div>
+
+</div>
+
+
+
+
+@code {
+
+	public string Filtro { get; set; }
+	public string ValorBusqueda { get; set; }
+
+
+	public DateTime FechaEntrada { get; set; }
+	public DateTime FechaSalida { get; set; }
+
+
+
+	public async Task Buscar()
+	{
+	}
+
+}
