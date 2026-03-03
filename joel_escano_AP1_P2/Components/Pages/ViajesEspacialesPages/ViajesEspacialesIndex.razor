@@ -11,10 +11,10 @@
 		<div class="card-body">
 			<div class="row mb-3">
 				<div class="col-2">
-					<label class="h5">Filtro</label>
+					<label class="h6">Filtro</label>
 				</div>
 				<div class="col-2">
-					<div class="h5">Búsqueda</div>
+					<div class="h6">Búsqueda</div>
 				</div>
 				<div class="col-2">
 					<div class="h6">Fecha de Salida</div>
@@ -29,21 +29,17 @@
 						<option value="seleccionar"></option>
 					</InputSelect>
 				</div>
-
 				<div class="col-2">
 					<InputText class="form-control" @bind-Value=ValorBusqueda"></InputText>
 				</div>
-
 				<div class="col-2">
 					<InputDate class="form-control" @bind-Value="FechaEntrada">
 					</InputDate>
 				</div>
-
 				<div class="col-2">
 					<InputDate class="form-control" @bind-Value="FechaSalida">
 					</InputDate>
 				</div>
-
 				<div class="col-2">
 					<button class="btn btn-primary" @onclick="Buscar"><span class="bi bi-search"></span>Buscar</button>
 				</div>
