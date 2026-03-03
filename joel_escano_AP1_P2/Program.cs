@@ -1,6 +1,7 @@
 using Blazored.Toast;
 using joel_escano_AP1_P2.Components;
 using joel_escano_AP1_P2.DAL;
+using joel_escano_AP1_P2.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 
 builder.Services.AddDbContextFactory<Contexto>(options => options.UseSqlServer(ConStr));
+
+
+builder.Services.AddScoped<ViajesEspacialesService>();
 
 
 builder.Services.AddBlazoredToast();
