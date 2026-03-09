@@ -13,24 +13,24 @@ namespace joel_escano_AP1_P2.Services
             return true;
         }
 
-        public async Task<bool> Insertar(ViajesEspaciales Viaje)
+        public async Task<bool> Insertar(AsignacionesPuntos Viaje)
         {
             return true;
         }
 
-        public async Task<bool> Modificar(ViajesEspaciales Viaje)
+        public async Task<bool> Modificar(AsignacionesPuntos Viaje)
         {
             return true;
         }
 
        
 
-        public async Task<bool> Guardar(ViajesEspaciales Viaje)
+        public async Task<bool> Guardar(AsignacionesPuntos Viaje)
         {
             return true;
         }
 
-        public async Task<List<ViajesEspaciales>> Listar(Expression<Func<ViajesEspaciales, bool>> criterio)
+        public async Task<List<AsignacionesPuntos>> Listar(Expression<Func<AsignacionesPuntos, bool>> criterio)
         {
             await using var contexto = await DbContextFactory.CreateDbContextAsync();
 
