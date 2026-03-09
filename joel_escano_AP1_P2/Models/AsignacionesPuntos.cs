@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection.Metadata.Ecma335;
 
 namespace joel_escano_AP1_P2.Models
@@ -15,11 +16,8 @@ namespace joel_escano_AP1_P2.Models
 
         public int TotalPuntos { get; set;  }
 
-
-
-
-
-        //[Range(1,double.MaxValue, ErrorMessage ="El costo es obligatorio y tiene que ser mayor a 0")]
+        [ForeignKey("AsignacionId")]
+        public ICollection<AsignacionesPuntosDetalle> AsignacionesPuntosDetalle { get; set; } = new List<AsignacionesPuntosDetalle>();
 
 
 
