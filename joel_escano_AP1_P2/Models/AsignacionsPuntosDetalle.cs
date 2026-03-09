@@ -2,7 +2,7 @@
 
 namespace joel_escano_AP1_P2.Models;
 
-public class AsignacionPuntosDetalle
+public class AsignacionsPuntosDetalle
 {
     [Key]
     public int IdDetalle { get; set; }
