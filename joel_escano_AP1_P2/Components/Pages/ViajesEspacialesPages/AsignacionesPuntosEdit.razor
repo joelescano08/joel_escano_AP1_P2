@@ -1,0 +1,224 @@
+﻿@page "/AsignacionesPuntos/Edit/{Id:int}"
+@using Microsoft.EntityFrameworkCore
+@inject AsignacionesService asignacionesService
+@inject IDbContextFactory<Contexto> DbFactory
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+
+<PageTitle>Modificar Asignación de Puntos</PageTitle>
+
+<div class="card shadow-lg m-4">
+    <div class="card-header">
+        <h5>Modificar Asignación de Puntos</h5>
+    </div>
+    <EditForm Model="asignacion" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <div class="card-body">
+            <h6 class="text-warning">Datos de la Asignación</h6>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Fecha:</label>
+                    <InputDate @bind-Value="asignacion.Fecha" class="form-control" />
+                    <ValidationMessage For="@(() => asignacion.Fecha)" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Estudiante:</label>
+                    <InputSelect @bind-Value="asignacion.EstudianteId" class="form-select">
+                        <option value="0">Seleccione un estudiante...</option>
+                        @foreach (var est in ListaEstudiantes)
+                        {
+                            <option value="@est.EstudianteId">@est.Nombres</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => asignacion.EstudianteId)" />
+                </div>
+            </div>
+
+            <hr />
+            <h6 class="text-warning">Detalles de Puntos</h6>
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Tipo de Punto:</label>
+                    <InputSelect Value="detalleActual.TipoPuntosId" ValueExpression="() => detalleActual.TipoPuntosId" ValueChanged="(int id) => OnTipoPuntoChanged(id)" class="form-select">
+                        <option value="0">Seleccione un tipo...</option>
+                        @foreach (var tp in ListaTiposPuntos)
+                        {
+                            <option value="@tp.TipoId">@tp.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cantidad de Puntos:</label>
+                    <InputNumber @bind-Value="detalleActual.CantidadPuntos" class="form-control" readonly />
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-success w-100" @onclick="AgregarDetalle">
+                        <i class="bi bi-plus-circle"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(MensajeErrorDetalle))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @MensajeErrorDetalle
+                </div>
+            }
+
+            <table class="table table-bordered table-striped mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tipo de Punto</th>
+                        <th>Cantidad de Puntos</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var det in asignacion.AsignacionesPuntosDetalle)
+                    {
+                        <tr>
+                            <td>@(ObtenerNombreTipo(det.TipoPuntosId))</td>
+                            <td>@det.CantidadPuntos</td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => EliminarDetalle(det)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between">
+            <a href="/AsignacionesPuntos/Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button class="btn btn-danger" @onclick="Eliminar">Eliminar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    public AsignacionesPuntos asignacion { get; set; } = new AsignacionesPuntos();
+    public AsignacionesPuntosDetalle detalleActual { get; set; } = new AsignacionesPuntosDetalle();
+
+    public List<Estudiantes> ListaEstudiantes { get; set; } = new List<Estudiantes>();
+    public List<TiposPuntos> ListaTiposPuntos { get; set; } = new List<TiposPuntos>();
+    public string MensajeErrorDetalle { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        ListaEstudiantes = await contexto.Estudiantes.ToListAsync();
+        ListaTiposPuntos = await contexto.TiposPuntos.Where(t => t.Activo).ToListAsync();
+
+        var editRecord = await asignacionesService.Buscar(Id);
+        if (editRecord != null)
+        {
+            asignacion = editRecord;
+        }
+        else
+        {
+            navigationManager.NavigateTo("/AsignacionesPuntos/Index");
+        }
+    }
+
+    private void OnTipoPuntoChanged(int newTipoId)
+    {
+        detalleActual.TipoPuntosId = newTipoId;
+        var tipo = ListaTiposPuntos.FirstOrDefault(t => t.TipoId == newTipoId);
+        if (tipo != null)
+        {
+            detalleActual.CantidadPuntos = tipo.ValorPuntos;
+        }
+        else
+        {
+            detalleActual.CantidadPuntos = 0;
+        }
+    }
+
+    private string ObtenerNombreTipo(int id)
+    {
+        return ListaTiposPuntos.FirstOrDefault(t => t.TipoId == id)?.Nombre ?? "Desconocido";
+    }
+
+    private void AgregarDetalle()
+    {
+        MensajeErrorDetalle = string.Empty;
+
+        if (detalleActual.TipoPuntosId == 0)
+        {
+            MensajeErrorDetalle = "Debe seleccionar un tipo de punto.";
+            return;
+        }
+        if (detalleActual.CantidadPuntos <= 0)
+        {
+            MensajeErrorDetalle = "La cantidad de puntos debe ser mayor a 0.";
+            return;
+        }
+
+        asignacion.AsignacionesPuntosDetalle.Add(new AsignacionesPuntosDetalle
+        {
+            TipoPuntosId = detalleActual.TipoPuntosId,
+            CantidadPuntos = detalleActual.CantidadPuntos
+        });
+
+        detalleActual = new AsignacionesPuntosDetalle();
+    }
+
+    private void EliminarDetalle(AsignacionesPuntosDetalle detalle)
+    {
+        asignacion.AsignacionesPuntosDetalle.Remove(detalle);
+    }
+
+    private async Task Guardar()
+    {
+        MensajeErrorDetalle = string.Empty;
+
+        if (!asignacion.AsignacionesPuntosDetalle.Any())
+        {
+            MensajeErrorDetalle = "Debe agregar al menos un detalle de puntos.";
+            toastService.ShowWarning("Validacion sin Detalle");
+            return;
+        }
+
+        if (asignacion.EstudianteId == 0)
+        {
+            MensajeErrorDetalle = "Debe seleccionar un estudiante.";
+            return;
+        }
+
+        var guardo = await asignacionesService.Guardar(asignacion);
+
+        if (guardo)
+        {
+            toastService.ShowSuccess("Se ha guardado con exito");
+            navigationManager.NavigateTo("/AsignacionesPuntos/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        var eliminado = await asignacionesService.Eliminar(Id);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Se ha eliminado con exito");
+            navigationManager.NavigateTo("/AsignacionesPuntos/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al eliminar");
+            navigationManager.NavigateTo("/AsignacionesPuntos/Index");
+        }
+    }
+}

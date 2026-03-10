@@ -1,0 +1,161 @@
+﻿@page "/AsignacionesPuntos/Index"
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@inject AsignacionesService asignacionesService
+@inject IDbContextFactory<Contexto> DbContextFactory
+
+<PageTitle>Listado de Asignaciones de Puntos</PageTitle>
+
+<div class="container">
+
+	<div class="card shadow-lg m-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title">Listado de Asignaciones de Puntos</h5>
+            <a href="/AsignacionesPuntos/Create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+
+		<div class="card-body">
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Estudiante:</label>
+                    <InputSelect @bind-Value="FiltroEstudianteId" class="form-select">
+                        <option value="0">Todos los estudiantes</option>
+                        @foreach (var est in ListaEstudiantes)
+                        {
+                            <option value="@est.EstudianteId">@est.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha Desde:</label>
+                    <InputDate @bind-Value="FiltroFechaDesde" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha Hasta:</label>
+                    <InputDate @bind-Value="FiltroFechaHasta" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary w-100" @onclick="Buscar">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <button type="button" class="btn btn-secondary w-100" @onclick="Limpiar">
+                            <i class="bi bi-eraser"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <QuickGrid Items="@AsignacionesFiltradas" class="table table-striped mt-4">
+                <PropertyColumn Property="@(a => a.AsignacionId)" Title="ID"></PropertyColumn>
+                <PropertyColumn Property="@(a => a.Fecha)" Format="dd/MM/yyyy" Title="Fecha"></PropertyColumn>
+                <TemplateColumn Title="Estudiante">
+                @ObtenerNombreEstudiante(context.EstudianteId)
+                </TemplateColumn>
+                <PropertyColumn Property="@(a => a.TotalPuntos)" Title="Total Puntos"></PropertyColumn>
+                <TemplateColumn Title="Acciones">
+                    <a href="/AsignacionesPuntos/Edit/@context.AsignacionId" class="btn btn-warning btn-sm" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    Editar</a>
+                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => Eliminar(context.AsignacionId)" title="Eliminar">
+                        <i class="bi bi-trash"></i>Eliminar
+                    </button>
+                    
+                </TemplateColumn>
+
+            </QuickGrid>
+
+
+
+		</div>
+
+        <div class="card-footer bg-light d-flex justify-content-between">
+            <strong>Total de Registros: @AsignacionesFiltradas.Count()</strong>
+            <strong>Total de Puntos Asignados: @AsignacionesFiltradas.Sum(a => a.TotalPuntos)</strong>
+        </div>
+
+	</div>
+
+</div>
+
+
+
+
+@code {
+
+    public IQueryable<AsignacionesPuntos> AsignacionesFiltradas { get; set; } = Enumerable.Empty<AsignacionesPuntos>().AsQueryable();
+    public List<Estudiantes> ListaEstudiantes { get; set; } = new List<Estudiantes>();
+
+    public int FiltroEstudianteId { get; set; } = 0;
+    public DateTime? FiltroFechaDesde { get; set; }
+    public DateTime? FiltroFechaHasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var contexto = await DbContextFactory.CreateDbContextAsync();
+        ListaEstudiantes = await contexto.Estudiantes.ToListAsync();
+    }
+
+    private async Task Buscar()
+    {
+        var lista = await asignacionesService.Listar(a => true);
+
+        if (FiltroEstudianteId > 0)
+        {
+            lista = lista.Where(a => a.EstudianteId == FiltroEstudianteId).ToList();
+        }
+
+        if (FiltroFechaDesde.HasValue)
+        {
+            lista = lista.Where(a => a.Fecha.Date >= FiltroFechaDesde.Value.Date).ToList();
+        }
+
+        if (FiltroFechaHasta.HasValue)
+        {
+            lista = lista.Where(a => a.Fecha.Date <= FiltroFechaHasta.Value.Date).ToList();
+        }
+
+        AsignacionesFiltradas = lista.AsQueryable();
+    }
+
+    private async Task Limpiar()
+    {
+        FiltroEstudianteId = 0;
+        FiltroFechaDesde = null;
+        FiltroFechaHasta = null;
+        await Buscar();
+    }
+
+    private string ObtenerNombreEstudiante(int id)
+    {
+        return ListaEstudiantes.FirstOrDefault(e => e.EstudianteId == id)?.Nombres ?? "Desconocido";
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var eliminado = await asignacionesService.Eliminar(id);
+        if (eliminado)
+        {
+            await Buscar();
+        }
+        else
+        {
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+

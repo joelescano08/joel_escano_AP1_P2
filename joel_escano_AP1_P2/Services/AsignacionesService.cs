@@ -1,12 +1,11 @@
 ﻿using joel_escano_AP1_P2.Models;
 using joel_escano_AP1_P2.DAL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using System.Linq.Expressions;
 
 namespace joel_escano_AP1_P2.Services;
 
-public class AsignacionesService(DbContextFactory<Contexto> DbContextFactory)
+public class AsignacionesService(IDbContextFactory<Contexto> DbContextFactory)
 {
     public async Task<bool> Existe(int id)
     {
